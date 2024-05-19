@@ -471,7 +471,7 @@ class DropBoxScreen(Frame):
     string = re.sub(r"\s", '', string)
     loginData.write_to_env('APP_SECRET', string)
 
-  def get_login_data():
+  def get_login_data(self):
     loginData.get_login_data()
     messagebox.showinfo('Information', 'Login Token wurde erfolgreich erstellt')
 
