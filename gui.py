@@ -508,7 +508,3 @@ class ShowDataFrame(Frame):
         tree.insert("",0,text=index,values=list(row))
     tree.pack(side = 'top', expand = 1, fill = 'both')
 
-
-if __name__ == "__main__":
-  testObj = windows()
-  testObj.mainloop()
