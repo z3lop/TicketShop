@@ -78,7 +78,6 @@ class DataFrameOperations(object):
 		df.to_excel(self.file_path)
 
 	def make_and_send_qr_code(self):
-    #qr_code = qr.make(self.id)
 		df = self.dataframe
 		filename = 'my_qr_code.png'
 		qr_code = qr.make(df.iloc[-1]['ID'])
@@ -93,15 +92,3 @@ class DataFrameOperations(object):
 		
 		pdf.make_pdf_ticket(eat_bool, how_many, prename, name)
 		os.remove(filename)
-
-
-
-# main_df = DataFrameOperations()
-# main_df.add_to_df('Matthias', 'meiring', 'main1@gmx.de', ' 1', False)
-# main_df.add_to_df('Tina', 'Haenel', 'tah@an.de', '1', False)
-
-# main_df.write_to_csv()
-# print(main_df.dataframe)
-
-# main_df = DataFrameOperations()
-# main_df.make_and_send_qr_code()

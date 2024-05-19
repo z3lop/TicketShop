@@ -1,7 +1,6 @@
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A5, landscape
 from reportlab.lib.utils import ImageReader
-import matplotlib.pyplot as plt
 
 def make_pdf_ticket(ticket_bool, how_many, prename, surname):
   if ticket_bool == 1:

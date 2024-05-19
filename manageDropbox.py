@@ -82,13 +82,3 @@ def dropbox_download_file():
     print('download complete')
   except Exception as e:
     print('Error downloading file from Dropbox:' + str(e))
-
-# dbx = get_dropbox_client()
-# df, files_list = dropbox_list_files()
-# print(df)
-
-
-# print(path)
-# dropbox_upload_file(path, filename, path_dropbox)
-# print(df.loc[0,'name'])
-# dropbox_download_file(path, df.loc[0,'name'], df.loc[0,'path_display'])

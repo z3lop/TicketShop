@@ -1,4 +1,3 @@
-import base64
 import requests
 import webbrowser
 import os
@@ -55,13 +54,6 @@ def get_login_data():
   APP_KEY = read_from_env('APP_KEY')
   ACCESS_CODE_GENERATED = read_from_env('ACCESS_CODE_GENERATED')
   
-  BASIC_AUTH = base64.b64encode(f'{APP_KEY}:{APP_SECRET}'.encode())
-  
-  headers = {
-    'Authorization': f"Basic {BASIC_AUTH.decode()}",
-    'Content-Type': 'application/x-www-form-urlencoded',
-  }
-  
   data = f'code={ACCESS_CODE_GENERATED}&grant_type=authorization_code'
   
   response = requests.post('https://api.dropboxapi.com/oauth2/token',
@@ -72,9 +64,3 @@ def get_login_data():
   write_to_env("ACCESS_TOKEN", response.get("access_token"))
   write_to_env('EXPIRE_TIME', response.get('expires_in'))
   write_to_env('TOKEN_TIME', str(time.time()))
-
-# path = os.path.dirname(__file__)
-# file = "option.json"
-# with open(os.path.join(path, file), 'w') as f:
-#     f.write(json.dumps(json.loads(response.text), indent=2))
-#     f.write(response.text)jkk

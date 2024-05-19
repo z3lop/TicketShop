@@ -1,6 +1,6 @@
-from tkinter import Tk, Label, Frame, Entry, Button, BooleanVar, CENTER, DoubleVar, Menu, messagebox, END
+from tkinter import Tk, Label, Frame, Entry, Button, BooleanVar, DoubleVar, Menu, messagebox, END, X
 from tkinter.font import Font
-from tkinter import ttk, X
+from tkinter.ttk import Spinbox, Checkbutton, Separator, Treeview, Scrollbar
 from ttkbootstrap import Style
 import re
 
@@ -183,15 +183,15 @@ class MainPage(Frame):
     PRENAME = Entry(self, width = width, font=used_font)
     NAME = Entry(self, width = width, font = used_font)
     MAIL = Entry(self, width = width, font = used_font)
-    NUM = ttk.Spinbox(self, from_ = 0, to = 10, increment=1, width = 6, command=set_value, font = spinbox_font, state='readonly')
-    KOMBI = ttk.Checkbutton(self, text = 'Kombi', variable=eat, command=toggle_options, style='Toolbutton')
-    PARTY = ttk.Checkbutton(self, text = 'Party', variable=var2, command=value_two, style='Toolbutton')
+    NUM = Spinbox(self, from_ = 0, to = 10, increment=1, width = 6, command=set_value, font = spinbox_font, state='readonly')
+    KOMBI = Checkbutton(self, text = 'Kombi', variable=eat, command=toggle_options, style='Toolbutton')
+    PARTY = Checkbutton(self, text = 'Party', variable=var2, command=value_two, style='Toolbutton')
     
     
     var_veg = DoubleVar(value = 0)
     var_ve = DoubleVar(value = 0)
-    vegetarian = ttk.Spinbox(frame_c, text = 'vegetarisch', command = set_vegan, textvariable=var_veg, font = spinbox_font, state='readonly')
-    vegan = ttk.Spinbox(frame_c, text='vegan', command = set_vege, textvariable= var_ve, font = spinbox_font, state='readonly')
+    vegetarian = Spinbox(frame_c, text = 'vegetarisch', command = set_vegan, textvariable=var_veg, font = spinbox_font, state='readonly')
+    vegan = Spinbox(frame_c, text='vegan', command = set_vege, textvariable= var_ve, font = spinbox_font, state='readonly')
     
     vegetarian.place(relx = 2*x, rely = 8*y)
     vegan.place(relx= 3*x, rely = 8*y)
@@ -409,7 +409,7 @@ class DropBoxScreen(Frame):
     except ValueError:
       tmp2 = ''
 
-    separator = ttk.Separator(self, orient ='horizontal')
+    separator = Separator(self, orient ='horizontal')
 
     Label(self, text = 'App Key', font = spinbox_font).place(relx = x, rely = 1*y)
     APP_KEY = Entry(self, fg = "grey", font = spinbox_font)
@@ -479,21 +479,15 @@ class ShowDataFrame(Frame):
   def __init__(self, parent, controller):
     Frame.__init__(self, parent)
 
-    used_font = Font(family = 'Calibri', size = 12, weight = 'normal')
-    spinbox_font = Font(family = 'Calibri', size = 10, weight = 'normal')
-    small_font = Font(family = 'Calibri', size = 8, weight = 'normal')
-
     df = ticket_shop.DataFrameOperations().dataframe
     cols = list(df.columns)
 
-    tree = ttk.Treeview(self, selectmode='browse')
+    tree = Treeview(self, selectmode='browse')
     
-
-    
-    horzscrlbar = ttk.Scrollbar(self, orient='horizontal', command = tree.xview)
+    horzscrlbar = Scrollbar(self, orient='horizontal', command = tree.xview)
     horzscrlbar.pack(side = 'bottom', fill = 'x')
 
-    vertscrlbar = ttk.Scrollbar(self, orient='vertical', command = tree.yview)
+    vertscrlbar = Scrollbar(self, orient='vertical', command = tree.yview)
     vertscrlbar.pack(side = 'right', fill = 'y')
     tree["columns"] = cols
     
