@@ -493,7 +493,6 @@ class ShowDataFrame(Frame):
     df = pd.read_excel(file_path)
     df = df.iloc[:, 1:]
     cols = list(df.columns)
-    print(cols)
     self.tree.delete(*self.tree.get_children())
 
     self.tree["columns"] = cols
