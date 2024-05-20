@@ -7,6 +7,8 @@ import re
 import ticket_shop
 import loginData
 import manageDropbox
+import pandas as pd
+import os
 
 class windows(Tk):
   def download_button(self):
@@ -16,6 +18,9 @@ class windows(Tk):
   def upload_button(self):
     manageDropbox.dropbox_upload_file()
     messagebox.showinfo("Info", "Datei wurde hochgeladen")
+
+  def update_button(self):
+    self.frames[ShowDataFrame].fill_tree()
   
   def menubar(self):
     self.menubar = Menu(self)
@@ -25,8 +30,13 @@ class windows(Tk):
     self.menubar.add_cascade(label="Datein", menu =self.files)
     self.menubar.add_cascade(label='Tickets', menu = self.add_users)
     
+    self.sub_menu = Menu(self.files, tearoff=0)
+
     self.files.add_command(label = 'Neu (überschreiben)')
-    self.files.add_command(label = 'Öffnen', command = lambda: self.show_frame(ShowDataFrame))
+    self.files.add_cascade(label = 'Ticketliste', menu = self.sub_menu)
+    
+    self.sub_menu.add_command(label = 'Öffnen', command = lambda: self.show_frame(ShowDataFrame))
+    self.sub_menu.add_command(label = 'Aktualisieren', command=self.update_button)
 
     self.files.add_separator()
 
@@ -476,29 +486,57 @@ class DropBoxScreen(Frame):
     messagebox.showinfo('Information', 'Login Token wurde erfolgreich erstellt')
 
 class ShowDataFrame(Frame):
+  def fill_tree(self):
+    filename = r'persons.xlsx'
+    mother_path = os.path.dirname(__file__)
+    file_path = os.path.join(mother_path, filename)
+    df = pd.read_excel(file_path)
+    df = df.iloc[:, 1:]
+    cols = list(df.columns)
+    print(cols)
+    self.tree.delete(*self.tree.get_children())
+
+    self.tree["columns"] = cols
+    #self.tree.column("#0", width=50)
+    for i in cols[::-1]:
+      self.tree.column(i, minwidth = 100, width = 120,anchor="w")
+      self.tree.heading(i, text=i, anchor='center')
+    
+    for index, row in df.iterrows():
+      self.tree.insert("",0,text=index,values=list(row))
+    
+    for i in [2, 3, 4]:
+      self.tree.column(i, anchor='w')
+    
+  
   def __init__(self, parent, controller):
     Frame.__init__(self, parent)
 
-    df = ticket_shop.DataFrameOperations().dataframe
+    df = ticket_shop.DataFrameOperations().initialize_main_df()
     cols = list(df.columns)
 
-    tree = Treeview(self, selectmode='browse')
+    self.tree = Treeview(self, selectmode='browse')
     
-    horzscrlbar = Scrollbar(self, orient='horizontal', command = tree.xview)
+    horzscrlbar = Scrollbar(self, orient='horizontal', command = self.tree.xview)
     horzscrlbar.pack(side = 'bottom', fill = 'x')
 
-    vertscrlbar = Scrollbar(self, orient='vertical', command = tree.yview)
+    vertscrlbar = Scrollbar(self, orient='vertical', command = self.tree.yview)
     vertscrlbar.pack(side = 'right', fill = 'y')
-    tree["columns"] = cols
     
-    tree.configure(yscrollcommand=vertscrlbar.set)
-    tree.configure(xscrollcommand=horzscrlbar.set)
-    tree.column("#0", width=50)
+    self.tree["columns"] = cols
+    
+    self.tree.configure(yscrollcommand=vertscrlbar.set)
+    self.tree.configure(xscrollcommand=horzscrlbar.set)
+    self.tree.column("#0", width=50)
     for i in cols:
-        tree.column(i, width = 100,anchor="w")
-        tree.heading(i, text=i, anchor='w')
+      self.tree.column(i, minwidth = 100, width = 120,anchor="center")
+      self.tree.heading(i, text=i, anchor='center')
     
     for index, row in df.iterrows():
-        tree.insert("",0,text=index,values=list(row))
-    tree.pack(side = 'top', expand = 1, fill = 'both')
+      self.tree.insert("",0,text=index,values=list(row))
+
+    for i in [2, 3, 4]:
+      self.tree.column(i, anchor='w')
+
+    self.tree.pack(side = 'top', expand = 1, fill = 'both')
 
