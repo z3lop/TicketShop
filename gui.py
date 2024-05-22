@@ -2,13 +2,21 @@ from tkinter import Tk, Label, Frame, Entry, Button, BooleanVar, DoubleVar, Menu
 from tkinter.font import Font
 from tkinter.ttk import Spinbox, Checkbutton, Separator, Treeview, Scrollbar
 from ttkbootstrap import Style
-import re
+from re import sub as re_sub
+from os import path
+from pandas import read_excel
 
+import sys
 import ticket_shop
 import loginData
 import manageDropbox
-import pandas as pd
-import os
+
+import logging
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+
 
 class windows(Tk):
   def download_button(self):
@@ -239,10 +247,12 @@ class MainPage(Frame):
     
 		
   def pressButton(self, controller,PRENAME, NAME, MAIL, NUM, eat, var_veg, var_ve):
+    logging.debug('Button pressed')
     self.collect_data(PRENAME, NAME, MAIL, NUM, eat, var_veg, var_ve)
     self.clear_entries(PRENAME, NAME, MAIL, NUM)
-    frame = controller.frames[SidePage]
-    frame.tkraise()
+    logging.debug('show completion frame')
+    controller.show_frame(SidePage)
+    logging.debug('Completion frame should be shown')
   
   def clear_entries(self, PRENAME, NAME, MAIL, NUM):
     PRENAME.delete(0, 'end')
@@ -250,6 +260,7 @@ class MainPage(Frame):
     MAIL.delete(0,'end')
 
   def collect_data(self, PRENAME: Entry, NAME: Entry, MAIL: Entry, NUM, eat, var_veg, var_ve):
+    logging.debug('in collect Data')
     num_ticket = int(NUM.get())
     prename = str(PRENAME.get())
     name = str(NAME.get())
@@ -267,7 +278,9 @@ class MainPage(Frame):
     if bool == True:
       df.write_to_csv()
       df.make_and_send_qr_code()
+      logging.debug('Made ticket and ready to send')
     else:
+      logging.debug('Form not filled out correctly')
       print('Form not filled out correctly')
   
 class SidePage(Frame):
@@ -411,12 +424,12 @@ class DropBoxScreen(Frame):
 
     try:
       tmp1 = loginData.read_from_env('APP_KEY')
-    except ValueError:
+    except FileNotFoundError:
       tmp1 = ''
     
     try: 
       tmp2 = loginData.read_from_env('APP_SECRET')
-    except ValueError:
+    except FileNotFoundError:
       tmp2 = ''
 
     separator = Separator(self, orient ='horizontal')
@@ -468,17 +481,17 @@ class DropBoxScreen(Frame):
   
   def save_button_access(self, entry):
     string = entry.get()
-    string = re.sub(r"\s", '', string)
+    string = re_sub(r"\s", '', string)
     loginData.write_to_env('ACCESS_CODE_GENERATED', string)
 
   def save_button_app(self, entry):
     string = entry.get()
-    string = re.sub(r"\s", '', string)
+    string = re_sub(r"\s", '', string)
     loginData.write_to_env('APP_KEY', string)
   
   def save_button_secret(self, entry):
     string = entry.get()
-    string = re.sub(r"\s", '', string)
+    string = re_sub(r"\s", '', string)
     loginData.write_to_env('APP_SECRET', string)
 
   def get_login_data(self):
@@ -488,15 +501,18 @@ class DropBoxScreen(Frame):
 class ShowDataFrame(Frame):
   def fill_tree(self):
     filename = r'persons.xlsx'
-    mother_path = os.path.dirname(__file__)
-    file_path = os.path.join(mother_path, filename)
-    df = pd.read_excel(file_path)
+    if getattr(sys, 'frozen', False):
+      mother_path = path.dirname(sys.executable)
+    elif __file__:
+      mother_path = path.dirname(__file__)
+    file_path = path.join(mother_path, filename)
+    df = read_excel(file_path)
     df = df.iloc[:, 1:]
     cols = list(df.columns)
     self.tree.delete(*self.tree.get_children())
 
     self.tree["columns"] = cols
-    #self.tree.column("#0", width=50)
+    self.tree.column("#0", width=100)
     for i in cols[::-1]:
       self.tree.column(i, minwidth = 100, width = 120,anchor="w")
       self.tree.heading(i, text=i, anchor='center')

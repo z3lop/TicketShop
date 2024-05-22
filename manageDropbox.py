@@ -1,8 +1,10 @@
-import dropbox
-import pandas as pd
-import pathlib
-import os
-import time
+from dropbox import Dropbox, files
+from pandas import DataFrame
+
+from pathlib import Path
+from os import path
+from time import time
+import sys
 
 import loginData
 
@@ -10,10 +12,10 @@ def get_dropbox_client():
   access_token = loginData.read_from_env('ACCESS_TOKEN')
   expire = float(loginData.read_from_env('TOKEN_TIME')) + float(loginData.read_from_env("EXPIRE_TIME"))
 
-  if time.time() > expire:
+  if time() > expire:
     loginData.get_access_code()
 
-  return dropbox.Dropbox(access_token)
+  return Dropbox(access_token)
 
 def dropbox_list_files(path = '', files_list = None):
   """Return a Pandas dataframe of files in a given Dropbox folder path in the Apps directory.
@@ -34,7 +36,7 @@ def dropbox_list_files(path = '', files_list = None):
       }
       files_list.append(metadata)
       print(f"{entry.name}: {entry.path_display}")
-  df = pd.DataFrame.from_records(files_list)
+  df = DataFrame.from_records(files_list)
   return df, files_list
 
 def dropbox_upload_file():
@@ -51,7 +53,10 @@ def dropbox_upload_file():
     Returns:
         meta: The Dropbox file metadata.
     """
-    local_path = os.path.dirname(__file__)
+    if getattr(sys, 'frozen', False):
+      local_path = path.dirname(sys.executable)
+    elif __file__:
+      local_path = path.dirname(__file__)
     local_file = "persons.xlsx"
     dropbox_file_path = '/persons.xlsx'
     
@@ -59,9 +64,9 @@ def dropbox_upload_file():
     try:
         dbx = get_dropbox_client()
 
-        local_file_path = pathlib.Path(local_path) / local_file
+        local_file_path = Path(local_path) / local_file
         with local_file_path.open("rb") as f:
-            meta = dbx.files_upload(f.read(), dropbox_file_path, mode=dropbox.files.WriteMode("overwrite"))
+            meta = dbx.files_upload(f.read(), dropbox_file_path, mode=files.WriteMode("overwrite"))
 
             return meta
     except IndexError:
@@ -70,14 +75,17 @@ def dropbox_upload_file():
     #     print('Error uploading file to Dropbox: ' + str(e))
 
 def dropbox_download_file():
-  local_path = os.path.dirname(__file__)
+  if getattr(sys, 'frozen', False):
+    local_path = path.dirname(sys.executable)
+  elif __file__:
+    local_path = path.dirname(__file__)
   filename = "persons.xlsx"
   dropbox_file_path = '/persons.xlsx'
 
   try:
     dbx = get_dropbox_client()
 
-    local_file_path = pathlib.Path(local_path) / filename
+    local_file_path = Path(local_path) / filename
     dbx.files_download_to_file(local_file_path, dropbox_file_path)
     print('download complete')
   except Exception as e:

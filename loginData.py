@@ -1,14 +1,18 @@
-import requests
-import webbrowser
-import os
-import ast
-import time
+from requests import post
+from webbrowser import open as web_open
+from os import path
+from ast import literal_eval
+from time import time
+import sys
 
 def write_to_env(variable: str, value: str):
-  env_file_path = os.path.dirname(__file__)
+  if getattr(sys, 'frozen', False):
+    env_file_path = path.dirname(sys.executable)
+  elif __file__:
+    env_file_path = path.dirname(__file__)
 
-  file_path = os.path.join(env_file_path, '.env')
-  if not os.path.isfile(file_path):
+  file_path = path.join(env_file_path, '.env')
+  if not path.isfile(file_path):
     with open(file_path, 'w') as f:
       pass
   
@@ -32,8 +36,11 @@ def write_to_env(variable: str, value: str):
       f.writelines(f"{variable}={value}" + "\n")
 
 def read_from_env(variable: str):
-  env_file_path = os.path.dirname(__file__)
-  with open(os.path.join(env_file_path, '.env'), 'r') as f:
+  if getattr(sys, 'frozen', False):
+    env_file_path = path.dirname(sys.executable)
+  elif __file__:
+    env_file_path = path.dirname(__file__)
+  with open(path.join(env_file_path, '.env'), 'r') as f:
     for line in f:
       if line.startswith('#') or not line.strip():
         continue
@@ -47,7 +54,7 @@ def get_access_code():
   url = f'https://www.dropbox.com/oauth2/authorize?client_id={APP_KEY}&' \
     f'response_type=code&token_access_type=offline'
   
-  webbrowser.open(url)
+  web_open(url)
 
 def get_login_data():
   APP_SECRET = read_from_env('APP_SECRET')
@@ -56,11 +63,11 @@ def get_login_data():
   
   data = f'code={ACCESS_CODE_GENERATED}&grant_type=authorization_code'
   
-  response = requests.post('https://api.dropboxapi.com/oauth2/token',
+  response = post('https://api.dropboxapi.com/oauth2/token',
                            data=data,
                            auth=(APP_KEY, APP_SECRET))
   
-  response = ast.literal_eval(response.text)
+  response = literal_eval(response.text)
   write_to_env("ACCESS_TOKEN", response.get("access_token"))
   write_to_env('EXPIRE_TIME', response.get('expires_in'))
-  write_to_env('TOKEN_TIME', str(time.time()))
+  write_to_env('TOKEN_TIME', str(time()))

@@ -1,16 +1,20 @@
-import pandas as pd
-import qrcode as qr
+from pandas import DataFrame, read_excel
+from qrcode import make as qr_make
 from time import localtime, strftime
 from random import randint
-import os
+from os import path, remove
+import sys
 
 import pdf
 
 class DataFrameOperations(object):
 	def __init__(self):
 		filename = r'persons.xlsx'
-		self.mother_path = os.path.dirname(__file__)
-		self.file_path = os.path.join(self.mother_path, filename)
+		if getattr(sys, 'frozen', False):
+			self.mother_path = path.dirname(sys.executable)
+		elif __file__:
+			self.mother_path = path.dirname(__file__)
+		self.file_path = path.join(self.mother_path, filename)
 		self.dataframe = self.initialize_main_df()	
 		self.id = 0
 
@@ -23,10 +27,10 @@ class DataFrameOperations(object):
 		-initizied main data frame
 		'''
 		try:
-			main_df = pd.read_excel(self.file_path)
+			main_df = read_excel(self.file_path)
 			main_df.drop(columns=main_df.columns[0], axis=1, inplace=True)
 		except:
-			main_df = pd.DataFrame([], columns=['Datum','ID', 'Vorname', 'Nachname', 'E-Mail',
+			main_df = DataFrame([], columns=['Datum','ID', 'Vorname', 'Nachname', 'E-Mail',
                                         'Ticketkäufe', 'Essen (1 / 0)', '[Vegetarisch / Vegan]'])
   	
 		return main_df
@@ -80,8 +84,8 @@ class DataFrameOperations(object):
 	def make_and_send_qr_code(self):
 		df = self.dataframe
 		filename = 'my_qr_code.png'
-		qr_code = qr.make(df.iloc[-1]['ID'])
-		qr_code.save(os.path.join(self.mother_path, filename))
+		qr_code = qr_make(df.iloc[-1]['ID'])
+		qr_code.save(path.join(self.mother_path, filename))
 
 		name = df.iloc[-1]['Nachname']
 		prename = df.iloc[-1]['Vorname']
@@ -91,4 +95,4 @@ class DataFrameOperations(object):
 
 		
 		pdf.make_pdf_ticket(eat_bool, how_many, prename, name)
-		os.remove(filename)
+		remove(filename)
